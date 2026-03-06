@@ -41,3 +41,7 @@ next-env.d.ts
 
 # server data
 /data/
+
+# debug / raw data
+jsonpluggyinv
+Captura de Tela*
