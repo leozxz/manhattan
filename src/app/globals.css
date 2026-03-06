@@ -1,14 +1,6 @@
 @import "tailwindcss";
 
-.hover-arc[data-dir="tl"]:not([data-active="true"]):hover {
-  transform: translate(-2px, -2px) !important;
-}
-.hover-arc[data-dir="tr"]:not([data-active="true"]):hover {
-  transform: translate(2px, -2px) !important;
-}
-.hover-arc[data-dir="br"]:not([data-active="true"]):hover {
-  transform: translate(2px, 2px) !important;
-}
-.hover-arc[data-dir="bl"]:not([data-active="true"]):hover {
-  transform: translate(-2px, 2px) !important;
+.arc-hover:hover path {
+  opacity: 0.7 !important;
+  stroke-width: 15 !important;
 }

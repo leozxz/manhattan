@@ -107,8 +107,8 @@ const PILLAR_ORDER: Pillar[] = ["acoes", "realestate", "caixa", "internacionais"
 
 export default function ArcaPage() {
   const router = useRouter();
-  const [selected, setSelected] = useState<Pillar | null>(null);
-  const [carteiraExpanded, setCarteiraExpanded] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<Pillar>>(new Set());
+  const [carteiraExpanded, setCarteiraExpanded] = useState<Set<string>>(new Set());
 
   // Investment data
   const [pillarData, setPillarData] = useState<Record<ArcaPillar, PillarAllocation> | null>(null);
@@ -228,7 +228,12 @@ export default function ArcaPage() {
     outro: "Outro",
   };
 
-  const detail = selected ? PILLARS[selected] : null;
+  function toggleSet<T>(set: Set<T>, value: T): Set<T> {
+    const next = new Set(set);
+    if (next.has(value)) next.delete(value);
+    else next.add(value);
+    return next;
+  }
 
   return (
     <div className="min-h-screen bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('/background.png')" }}>
@@ -297,7 +302,7 @@ export default function ArcaPage() {
           const pctCaixa = pillarData.caixa.percentage;
           const pctInternacionais = pillarData.internacionais.percentage;
 
-          const ArcCircle = ({ pcts, centerText, onClickArc, activeArc }: { pcts: { acoes: string; realestate: string; caixa: string; internacionais: string }; centerText: React.ReactNode; onClickArc?: (key: string) => void; activeArc?: string | null }) => (
+          const ArcCircle = ({ pcts, centerText, onClickArc, activeArcs }: { pcts: { acoes: string; realestate: string; caixa: string; internacionais: string }; centerText: React.ReactNode; onClickArc?: (key: string) => void; activeArcs?: Set<string> }) => (
             <div className="relative w-[320px] h-[320px]">
               <svg viewBox="0 0 300 300" className="w-full h-full">
                 {([
@@ -308,15 +313,15 @@ export default function ArcaPage() {
                 ] as const).map((arc) => (
                   <g
                     key={arc.key}
-                    className="cursor-pointer"
-                    style={{ transition: "transform 0.3s cubic-bezier(.34,1.56,.64,1), filter 0.3s ease", transform: activeArc === arc.key ? `translate(${arc.tx}, ${arc.ty})` : undefined, filter: activeArc === arc.key ? `drop-shadow(0 0 6px ${arc.shadow})` : "none" }}
+                    className="cursor-pointer arc-hover"
+                    style={{ transition: "transform 0.3s cubic-bezier(.34,1.56,.64,1), filter 0.3s ease", transform: activeArcs?.has(arc.key) ? `translate(${arc.tx}, ${arc.ty})` : undefined, filter: activeArcs?.has(arc.key) ? `drop-shadow(0 0 6px ${arc.shadow})` : "none" }}
                     onClick={() => onClickArc?.(arc.key)}
                   >
                     <path
                       d={arc.d}
                       fill="none" stroke={arc.color} strokeLinecap="butt"
-                      strokeWidth={activeArc === arc.key ? 16 : 12}
-                      opacity={activeArc === arc.key ? 1 : 0.35}
+                      strokeWidth={activeArcs?.has(arc.key) ? 16 : 12}
+                      opacity={activeArcs?.has(arc.key) ? 1 : 0.35}
                       style={{ transition: "opacity 0.3s ease, stroke-width 0.3s ease" }}
                     />
                   </g>
@@ -354,19 +359,20 @@ export default function ArcaPage() {
                   <ArcCircle
                     pcts={{ acoes: `${pctAcoes.toFixed(0)}%`, realestate: `${pctRealestate.toFixed(0)}%`, caixa: `${pctCaixa.toFixed(0)}%`, internacionais: `${pctInternacionais.toFixed(0)}%` }}
                     centerText={fmt(totalBalance)}
-                    onClickArc={(key) => setCarteiraExpanded(carteiraExpanded === key ? null : key)}
-                    activeArc={carteiraExpanded}
+                    onClickArc={(key) => setCarteiraExpanded(toggleSet(carteiraExpanded, key))}
+                    activeArcs={carteiraExpanded}
                   />
                   {/* Cards below chart */}
                   <div className="grid gap-2 w-full max-w-xs">
                     {allKeys.filter((key) => pillarData[key].investments.length > 0).map((key) => {
                       const p = pillarData[key];
+                      const isActive = carteiraExpanded.has(key);
                       return (
                         <button
                           key={key}
-                          onClick={() => setCarteiraExpanded(carteiraExpanded === key ? null : key)}
+                          onClick={() => setCarteiraExpanded(toggleSet(carteiraExpanded, key))}
                           className={`rounded-xl border px-3 py-2.5 text-left bg-white transition-all duration-300 ${
-                            carteiraExpanded === key
+                            isActive
                               ? "border-gray-400 -translate-y-0.5 shadow-md"
                               : "border-gray-200 hover:border-gray-300"
                           }`}
@@ -408,19 +414,19 @@ export default function ArcaPage() {
                   <ArcCircle
                     pcts={{ acoes: "25%", realestate: "25%", caixa: "25%", internacionais: "25%" }}
                     centerText={fmt(totalBalance)}
-                    onClickArc={(key) => setSelected(selected === key ? null : key as Pillar)}
-                    activeArc={selected}
+                    onClickArc={(key) => setSelected(toggleSet(selected, key as Pillar))}
+                    activeArcs={selected as Set<string>}
                   />
                   {/* Cards below chart */}
                   <div className="grid gap-2 w-full max-w-xs">
                     {PILLAR_ORDER.map((key) => {
                       const p = PILLARS[key];
-                      const isActive = selected === key;
+                      const isActive = selected.has(key);
                       const diff = idealPerPillar - pillarData[key].balance;
                       return (
                         <button
                           key={key}
-                          onClick={() => setSelected(isActive ? null : key)}
+                          onClick={() => setSelected(toggleSet(selected, key))}
                           className={`rounded-xl border px-3 py-2.5 text-left bg-white transition-all duration-300 ${
                             isActive
                               ? `${p.border} -translate-y-0.5 shadow-md`
@@ -455,133 +461,128 @@ export default function ArcaPage() {
               </div>
 
               {/* Expanded detail for Sua Carteira */}
-              <div
-                className={`mt-4 rounded-2xl border bg-white shadow-sm overflow-hidden transition-all duration-300 ease-in-out ${
-                  carteiraExpanded && typeof carteiraExpanded === "string"
-                    ? "border-gray-200 max-h-[600px] opacity-100 p-5"
-                    : "border-transparent max-h-0 opacity-0 p-0"
-                }`}
-              >
-                {carteiraExpanded && typeof carteiraExpanded === "string" && pillarData[carteiraExpanded as ArcaPillar] && (() => {
-                  const key = carteiraExpanded as ArcaPillar;
-                  const p = pillarData[key];
-                  return (
-                    <>
-                      <div className="flex items-center gap-3 mb-4">
-                        <div
-                          className="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-bold"
-                          style={{ backgroundColor: PILLAR_BG_LIGHT[key], color: PILLAR_COLORS[key] }}
-                        >
-                          {p.percentage.toFixed(0)}%
-                        </div>
-                        <div>
-                          <div className="text-base font-semibold text-gray-900">{PILLAR_LABELS[key]}</div>
-                          <div className="text-xs text-gray-500">{fmt(p.balance)} — {p.investments.length} ativo{p.investments.length !== 1 ? "s" : ""}</div>
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        {p.investments
-                          .sort((a, b) => b.balance - a.balance)
-                          .map((inv, i) => (
-                            <div
-                              key={i}
-                              className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-gray-50"
-                            >
-                              <div className="min-w-0 pr-3">
-                                <div className="text-sm text-gray-700 truncate">{inv.name}</div>
-                                <div className="text-[11px] text-gray-400">
-                                  {inv.type}{inv.subtype ? ` / ${inv.subtype}` : ""}
-                                </div>
-                              </div>
-                              <div className="text-right shrink-0">
-                                <div className="text-sm font-medium text-gray-900">{fmt(inv.balance)}</div>
-                                {totalBalance > 0 && (
-                                  <div className="text-[11px] text-gray-400">
-                                    {((inv.balance / totalBalance) * 100).toFixed(1)}% do total
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                      </div>
-                    </>
-                  );
-                })()}
-              </div>
-
-              {/* Expanded detail for ARCA */}
-              <div
-                className={`mt-4 rounded-2xl border bg-white shadow-sm overflow-hidden transition-all duration-300 ease-in-out ${
-                  detail && selected
-                    ? `${detail.border} max-h-[600px] opacity-100 p-6`
-                    : "border-transparent max-h-0 opacity-0 p-0"
-                }`}
-              >
-                {detail && selected && (() => {
-                  const currentBal = pillarData[selected].balance;
-                  const diffBal = idealPerPillar - currentBal;
-                  return (
-                    <>
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className={`flex h-10 w-10 items-center justify-center rounded-lg text-base font-bold ${detail.bg} ${detail.color}`}>
-                          {detail.letter}
-                        </div>
-                        <div>
-                          <div className="text-base font-semibold text-gray-900">{detail.label}</div>
-                          <div className="text-xs text-gray-500">{detail.subtitle}</div>
-                        </div>
-                      </div>
-                      <div className="mb-4 grid grid-cols-3 gap-3">
-                        <div className="rounded-xl bg-gray-50 p-3 text-center">
-                          <div className="text-[11px] text-gray-400 mb-1">Atual</div>
-                          <div className="text-sm font-semibold text-gray-900">{fmt(currentBal)}</div>
-                          <div className="text-[11px] text-gray-400">{pillarData[selected].percentage.toFixed(1)}%</div>
-                        </div>
-                        <div className="rounded-xl bg-gray-50 p-3 text-center">
-                          <div className="text-[11px] text-gray-400 mb-1">Ideal (25%)</div>
-                          <div className="text-sm font-semibold text-gray-900">{fmt(idealPerPillar)}</div>
-                        </div>
-                        <div className={`rounded-xl p-3 text-center ${diffBal > 0 ? "bg-emerald-50" : diffBal < 0 ? "bg-red-50" : "bg-gray-50"}`}>
-                          <div className="text-[11px] text-gray-400 mb-1">Ajuste</div>
-                          <div className={`text-sm font-semibold ${diffBal > 0 ? "text-emerald-600" : diffBal < 0 ? "text-red-500" : "text-gray-900"}`}>
-                            {diffBal > 0 ? "+" : ""}{fmt(diffBal)}
+              {carteiraExpanded.size > 0 && (
+                <div className="mt-4 rounded-2xl border border-gray-200 bg-white shadow-sm p-5">
+                  {[...carteiraExpanded].filter((k) => pillarData[k as ArcaPillar]).map((key, idx) => {
+                    const k = key as ArcaPillar;
+                    const p = pillarData[k];
+                    return (
+                      <div key={k}>
+                        {idx > 0 && <div className="my-4 h-px bg-gray-200" />}
+                        <div className="flex items-center gap-3 mb-4">
+                          <div
+                            className="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-bold"
+                            style={{ backgroundColor: PILLAR_BG_LIGHT[k], color: PILLAR_COLORS[k] }}
+                          >
+                            {p.percentage.toFixed(0)}%
                           </div>
-                          <div className={`text-[11px] ${diffBal > 0 ? "text-emerald-500" : diffBal < 0 ? "text-red-400" : "text-gray-400"}`}>
-                            {diffBal > 0 ? "Comprar" : diffBal < 0 ? "Reduzir" : "Equilibrado"}
+                          <div>
+                            <div className="text-base font-semibold text-gray-900">{PILLAR_LABELS[k]}</div>
+                            <div className="text-xs text-gray-500">{fmt(p.balance)} — {p.investments.length} ativo{p.investments.length !== 1 ? "s" : ""}</div>
                           </div>
                         </div>
-                      </div>
-                      <div>
-                        <div className="text-xs font-medium text-gray-500 mb-3">Sugestão de alocação do aporte</div>
-                        <div className="space-y-2">
-                          {detail.suggestions.map((s) => {
-                            const suggestedValue = diffBal > 0 ? diffBal * (s.pct / 100) : 0;
-                            return (
-                              <div key={s.asset} className="flex items-center justify-between rounded-lg px-3 py-2 bg-gray-50">
+                        <div className="space-y-1">
+                          {p.investments
+                            .sort((a, b) => b.balance - a.balance)
+                            .map((inv, i) => (
+                              <div
+                                key={i}
+                                className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-gray-50"
+                              >
                                 <div className="min-w-0 pr-3">
-                                  <div className="text-sm font-medium text-gray-900">{s.asset}</div>
-                                  <div className="text-[11px] text-gray-400">{s.desc}</div>
+                                  <div className="text-sm text-gray-700 truncate">{inv.name}</div>
+                                  <div className="text-[11px] text-gray-400">
+                                    {inv.type}{inv.subtype ? ` / ${inv.subtype}` : ""}
+                                  </div>
                                 </div>
                                 <div className="text-right shrink-0">
-                                  <div className="text-sm font-semibold text-gray-900">
-                                    {suggestedValue > 0 ? fmt(suggestedValue) : `${s.pct}%`}
-                                  </div>
-                                  {suggestedValue > 0 && (
-                                    <div className="text-[11px] text-gray-400">{s.pct}% do pilar</div>
+                                  <div className="text-sm font-medium text-gray-900">{fmt(inv.balance)}</div>
+                                  {totalBalance > 0 && (
+                                    <div className="text-[11px] text-gray-400">
+                                      {((inv.balance / totalBalance) * 100).toFixed(1)}% do total
+                                    </div>
                                   )}
                                 </div>
                               </div>
-                            );
-                          })}
+                            ))}
                         </div>
-                        {diffBal <= 0 && (
-                          <p className="text-xs text-gray-400 mt-3">Este pilar já está equilibrado ou acima do ideal. Direcione novos aportes para os pilares com déficit.</p>
-                        )}
                       </div>
-                    </>
-                  );
-                })()}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Expanded detail for ARCA */}
+              {selected.size > 0 && (
+                <div className="mt-4 rounded-2xl border border-gray-200 bg-white shadow-sm p-6">
+                  {[...selected].map((key, idx) => {
+                    const d = PILLARS[key];
+                    const currentBal = pillarData[key].balance;
+                    const diffBal = idealPerPillar - currentBal;
+                    return (
+                      <div key={key}>
+                        {idx > 0 && <div className="my-5 h-px bg-gray-200" />}
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className={`flex h-10 w-10 items-center justify-center rounded-lg text-base font-bold ${d.bg} ${d.color}`}>
+                            {d.letter}
+                          </div>
+                          <div>
+                            <div className="text-base font-semibold text-gray-900">{d.label}</div>
+                            <div className="text-xs text-gray-500">{d.subtitle}</div>
+                          </div>
+                        </div>
+                        <div className="mb-4 grid grid-cols-3 gap-3">
+                          <div className="rounded-xl bg-gray-50 p-3 text-center">
+                            <div className="text-[11px] text-gray-400 mb-1">Atual</div>
+                            <div className="text-sm font-semibold text-gray-900">{fmt(currentBal)}</div>
+                            <div className="text-[11px] text-gray-400">{pillarData[key].percentage.toFixed(1)}%</div>
+                          </div>
+                          <div className="rounded-xl bg-gray-50 p-3 text-center">
+                            <div className="text-[11px] text-gray-400 mb-1">Ideal (25%)</div>
+                            <div className="text-sm font-semibold text-gray-900">{fmt(idealPerPillar)}</div>
+                          </div>
+                          <div className={`rounded-xl p-3 text-center ${diffBal > 0 ? "bg-emerald-50" : diffBal < 0 ? "bg-red-50" : "bg-gray-50"}`}>
+                            <div className="text-[11px] text-gray-400 mb-1">Ajuste</div>
+                            <div className={`text-sm font-semibold ${diffBal > 0 ? "text-emerald-600" : diffBal < 0 ? "text-red-500" : "text-gray-900"}`}>
+                              {diffBal > 0 ? "+" : ""}{fmt(diffBal)}
+                            </div>
+                            <div className={`text-[11px] ${diffBal > 0 ? "text-emerald-500" : diffBal < 0 ? "text-red-400" : "text-gray-400"}`}>
+                              {diffBal > 0 ? "Comprar" : diffBal < 0 ? "Reduzir" : "Equilibrado"}
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs font-medium text-gray-500 mb-3">Sugestão de alocação do aporte</div>
+                          <div className="space-y-2">
+                            {d.suggestions.map((s) => {
+                              const suggestedValue = diffBal > 0 ? diffBal * (s.pct / 100) : 0;
+                              return (
+                                <div key={s.asset} className="flex items-center justify-between rounded-lg px-3 py-2 bg-gray-50">
+                                  <div className="min-w-0 pr-3">
+                                    <div className="text-sm font-medium text-gray-900">{s.asset}</div>
+                                    <div className="text-[11px] text-gray-400">{s.desc}</div>
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <div className="text-sm font-semibold text-gray-900">
+                                      {suggestedValue > 0 ? fmt(suggestedValue) : `${s.pct}%`}
+                                    </div>
+                                    {suggestedValue > 0 && (
+                                      <div className="text-[11px] text-gray-400">{s.pct}% do pilar</div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          {diffBal <= 0 && (
+                            <p className="text-xs text-gray-400 mt-3">Este pilar já está equilibrado ou acima do ideal. Direcione novos aportes para os pilares com déficit.</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
         })()}
@@ -602,10 +603,10 @@ export default function ArcaPage() {
                     <g
                       key={arc.key}
                       className="cursor-pointer"
-                      style={{ transition: "transform 0.3s ease, filter 0.3s ease", filter: selected === arc.key ? `drop-shadow(0 0 6px ${arc.color}88)` : "none" }}
-                      onClick={() => setSelected(selected === arc.key ? null : arc.key as Pillar)}
+                      style={{ transition: "transform 0.3s ease, filter 0.3s ease", filter: selected.has(arc.key as Pillar) ? `drop-shadow(0 0 6px ${arc.color}88)` : "none" }}
+                      onClick={() => setSelected(toggleSet(selected, arc.key as Pillar))}
                     >
-                      <path d={arc.d} fill="none" stroke={arc.color} strokeLinecap="butt" strokeWidth={selected === arc.key ? 16 : 12} opacity={selected === arc.key ? 1 : 0.35} style={{ transition: "opacity 0.3s ease, stroke-width 0.3s ease" }} />
+                      <path d={arc.d} fill="none" stroke={arc.color} strokeLinecap="butt" strokeWidth={selected.has(arc.key as Pillar) ? 16 : 12} opacity={selected.has(arc.key as Pillar) ? 1 : 0.35} style={{ transition: "opacity 0.3s ease, stroke-width 0.3s ease" }} />
                     </g>
                   ))}
                   <circle cx="150" cy="150" r="50" fill="white" stroke="#e5e7eb" strokeWidth="2" />
@@ -635,11 +636,11 @@ export default function ArcaPage() {
               <div className="grid gap-2 w-full max-w-xs">
                 {PILLAR_ORDER.map((key) => {
                   const p = PILLARS[key];
-                  const isActive = selected === key;
+                  const isActive = selected.has(key);
                   return (
                     <button
                       key={key}
-                      onClick={() => setSelected(isActive ? null : key)}
+                      onClick={() => setSelected(toggleSet(selected, key))}
                       className={`rounded-xl border px-3 py-2.5 text-left bg-white transition-all duration-300 ${
                         isActive ? `${p.border} -translate-y-0.5 shadow-md` : "border-gray-200 hover:border-gray-300"
                       }`}
@@ -655,22 +656,30 @@ export default function ArcaPage() {
                   );
                 })}
               </div>
-              {detail && selected && (
-                <div className="w-full max-w-lg rounded-2xl border bg-white shadow-sm p-6 mt-2" style={{ borderColor: `${PILLAR_COLORS[selected]}33` }}>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-lg text-base font-bold ${detail.bg} ${detail.color}`}>{detail.letter}</div>
-                    <div>
-                      <div className="text-base font-semibold text-gray-900">{detail.label}</div>
-                      <div className="text-xs text-gray-500">{detail.subtitle}</div>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 leading-relaxed mb-4">{detail.description}</p>
-                  <div className="text-xs font-medium text-gray-500 mb-2">Exemplos de ativos</div>
-                  <div className="flex flex-wrap gap-2">
-                    {detail.examples.map((ex) => (
-                      <span key={ex} className={`rounded-full border bg-white px-3 py-1 text-xs font-medium ${detail.border} ${detail.color}`}>{ex}</span>
-                    ))}
-                  </div>
+              {selected.size > 0 && (
+                <div className="w-full max-w-lg rounded-2xl border border-gray-200 bg-white shadow-sm p-6 mt-2">
+                  {[...selected].map((key, idx) => {
+                    const d = PILLARS[key];
+                    return (
+                      <div key={key}>
+                        {idx > 0 && <div className="my-5 h-px bg-gray-200" />}
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className={`flex h-10 w-10 items-center justify-center rounded-lg text-base font-bold ${d.bg} ${d.color}`}>{d.letter}</div>
+                          <div>
+                            <div className="text-base font-semibold text-gray-900">{d.label}</div>
+                            <div className="text-xs text-gray-500">{d.subtitle}</div>
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-600 leading-relaxed mb-4">{d.description}</p>
+                        <div className="text-xs font-medium text-gray-500 mb-2">Exemplos de ativos</div>
+                        <div className="flex flex-wrap gap-2">
+                          {d.examples.map((ex: string) => (
+                            <span key={ex} className={`rounded-full border bg-white px-3 py-1 text-xs font-medium ${d.border} ${d.color}`}>{ex}</span>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
