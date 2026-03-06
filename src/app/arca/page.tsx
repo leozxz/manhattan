@@ -107,7 +107,7 @@ const PILLAR_ORDER: Pillar[] = ["acoes", "realestate", "caixa", "internacionais"
 
 export default function ArcaPage() {
   const router = useRouter();
-  const [selected, setSelected] = useState<Set<Pillar>>(new Set());
+  const [selected, setSelected] = useState<Set<Pillar>>(new Set(["acoes", "realestate", "caixa", "internacionais"]));
   const [carteiraExpanded, setCarteiraExpanded] = useState<Set<string>>(new Set());
 
   // Investment data
