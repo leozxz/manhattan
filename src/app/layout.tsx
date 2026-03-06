@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Manhattan",
-  description: "Gestão financeira pessoal via Open Finance",
+  description: "Teste da metodologia ARCA com Open Finance",
   icons: {
     icon: "/icone.png",
   },
