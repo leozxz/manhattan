@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 40">
+  <circle cx="16" cy="20" r="13" fill="#CC092F" stroke="none"/>
+  <path d="M10 20 L16 14 L22 20 L16 26 Z" fill="white"/>
+  <text x="38" y="27" font-family="Arial,sans-serif" font-weight="bold" font-size="17" fill="#CC092F">Bradesco</text>
+</svg>

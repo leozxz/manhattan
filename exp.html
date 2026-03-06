@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Playbook Portfel — One-pager (ARCA)</title>
+  <style>
+    :root{
+      --bg1:#071326;
+      --bg2:#0b2b4a;
+      --border:rgba(255,255,255,.14);
+      --text:#eaf2ff;
+      --muted:rgba(234,242,255,.72);
+      --muted2:rgba(234,242,255,.55);
+      --accent:#4cc9f0;
+      --accent2:#4361ee;
+      --good:#4ade80;
+      --warn:#fbbf24;
+      --danger:#fb7185;
+      --shadow: 0 18px 45px rgba(0,0,0,.35);
+      --radius: 18px;
+      --c-acoes: #4cc9f0;
+      --c-realestate: #4ade80;
+      --c-caixa: #fbbf24;
+      --c-intl: #4361ee;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      background:
+        radial-gradient(900px 520px at 50% 0%, rgba(76,201,240,.20), transparent 60%),
+        radial-gradient(900px 520px at 0% 100%, rgba(67,97,238,.18), transparent 55%),
+        linear-gradient(155deg, var(--bg1), var(--bg2));
+    }
+
+    header{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      padding:18px 22px 10px;
+      gap:14px;
+    }
+    .title{display:flex; flex-direction:column; gap:6px; min-width:240px;}
+    h1{margin:0; font-size:18px; letter-spacing:.2px;}
+    .subtitle{margin:0; color:var(--muted); font-size:12px; line-height:1.25;}
+
+    .badges{display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end;}
+    .badge{
+      border:1px solid var(--border);
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      padding:7px 10px; border-radius:999px; font-size:12px; color:var(--muted);
+      box-shadow: 0 10px 24px rgba(0,0,0,.18); backdrop-filter: blur(8px); white-space:nowrap;
+    }
+    .badge b{color:var(--text); font-weight:650;}
+
+    main{
+      padding: 10px 22px 20px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow:hidden;
+      position:relative;
+    }
+    .panelHeader{
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .panelHeader h2{margin:0; font-size:13px; letter-spacing:.2px;}
+    .panelHeader .hint{font-size:11px; color:var(--muted2)}
+    .panelBody{padding: 12px 14px 14px;}
+
+    /* ===== Charts row ===== */
+    .charts-row{
+      display:grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap:0;
+      align-items:start;
+    }
+    .chart-col{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:14px;
+      padding: 14px;
+    }
+    .chart-col h3{margin:0; font-size:14px; font-weight:700; letter-spacing:.2px; text-align:center;}
+    .chart-col .chart-total{font-size:12px; color:var(--muted); text-align:center;}
+
+    .vertical-divider{
+      width:1px;
+      background: rgba(255,255,255,.12);
+      align-self:stretch;
+      margin: 14px 0;
+    }
+
+    .donut-wrap{
+      position:relative;
+      width:220px;
+      height:220px;
+    }
+    .donut-wrap svg{width:100%; height:100%;}
+    .donut-center{
+      position:absolute;
+      inset:0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      pointer-events:none;
+    }
+    .donut-center .total-value{font-size:16px; font-weight:800;}
+    .donut-center .total-label{font-size:10px; color:var(--muted);}
+
+    /* Category cards grid */
+    .cat-cards{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:8px;
+      width:100%;
+      max-width:340px;
+    }
+    .cat-card{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      border-radius:14px;
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .cat-dot{width:10px; height:10px; border-radius:999px; flex-shrink:0;}
+    .cat-info{display:flex; flex-direction:column; gap:2px;}
+    .cat-name{font-size:11px; color:var(--muted);}
+    .cat-value{font-size:13px; font-weight:700;}
+    .cat-pct{font-size:11px; color:var(--muted2);}
+
+    /* ===== Divider ===== */
+    .divider-line{
+      height:1px;
+      background: rgba(255,255,255,.12);
+      margin: 4px 0;
+    }
+
+    /* ===== Cards section ===== */
+    .cards-grid{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:10px;
+    }
+    .step{
+      border:1px solid rgba(255,255,255,.12);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border-radius: 16px;
+      padding: 12px;
+      cursor:pointer;
+      outline:none;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    }
+    .step:hover{transform: translateY(-1px); border-color: rgba(76,201,240,.45)}
+    .step[aria-selected="true"]{
+      border-color: rgba(76,201,240,.75);
+      background: radial-gradient(500px 120px at 0% 0%, rgba(76,201,240,.18), transparent 55%),
+                  linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+    }
+    .stepTop{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+    .stepName{font-weight:700; font-size:13px;}
+    .stepTag{font-size:11px; color:var(--muted); padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.14);}
+    .stepDesc{margin-top:8px; font-size:12px; color:var(--muted); line-height:1.35;}
+
+    .fourSteps{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top:12px;
+    }
+    .mini{
+      padding: 10px; border-radius: 16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      display:flex; flex-direction:column; gap: 6px;
+    }
+    .mini .k{font-size:11px; color:var(--muted2)}
+    .mini .v{font-size:12px; font-weight:700}
+
+    .callout{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.14);
+      border-radius: 16px;
+      padding: 10px;
+      margin-top:12px;
+    }
+    .callout h3{margin:0 0 8px; font-size:12px;}
+    .callout ul{margin:0; padding-left:18px; color:var(--muted); font-size:12px; line-height:1.35}
+
+    /* Detail panel */
+    .detail-section{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+    }
+    .detailTitle{margin:0; font-size:14px; letter-spacing:.2px;}
+    .detailSubtitle{margin:6px 0 0; font-size:12px; color:var(--muted); line-height:1.35}
+    .detailGrid{margin-top:12px; display:grid; gap:10px;}
+    .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
+    .chip{font-size:11px; color:var(--muted); border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); padding:6px 8px; border-radius: 999px;}
+    .footerNote{
+      margin-top: 12px; font-size: 11px; color: var(--muted2);
+      border-top: 1px solid rgba(255,255,255,.10); padding-top: 10px;
+    }
+
+    /* Responsivo */
+    @media (max-width: 900px){
+      .charts-row{grid-template-columns: 1fr;}
+      .vertical-divider{width:auto; height:1px; margin:0 14px;}
+      .cards-grid{grid-template-columns: 1fr 1fr;}
+      .fourSteps{grid-template-columns: repeat(2, 1fr);}
+      .detail-section{grid-template-columns: 1fr;}
+    }
+
+    :focus-visible{outline: 2px solid rgba(76,201,240,.85); outline-offset: 2px;}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">
+      <h1>Playbook Portfel — do lead ao Kickoff</h1>
+      <p class="subtitle">Comparativo: <b>Sua Carteira</b> vs <b>Carteira ARCA</b> (método de alocação)</p>
+    </div>
+    <div class="badges" aria-label="Regras rápidas">
+      <div class="badge"><b>1o contato</b> em até <b>24h</b></div>
+      <div class="badge"><b>Ritmo:</b> 14 dias - 3 rodadas</div>
+      <div class="badge"><b>Reuniões:</b> R1->R2 <= 7d - R2->Kickoff <= 7d</div>
+      <div class="badge"><b>Kickoff:</b> contrato + transferências</div>
+    </div>
+  </header>
+
+  <main>
+    <!-- CHARTS: Sua Carteira | Carteira ARCA -->
+    <section class="panel">
+      <div class="panelHeader">
+        <h2>Comparativo de Carteiras</h2>
+        <div class="hint">Sua alocação atual vs recomendação ARCA</div>
+      </div>
+      <div class="panelBody">
+        <div class="charts-row">
+          <!-- Sua Carteira -->
+          <div class="chart-col">
+            <h3>Sua Carteira</h3>
+            <div class="donut-wrap">
+              <svg viewBox="0 0 200 200" id="chartUser"></svg>
+              <div class="donut-center">
+                <div class="total-value" id="userTotal"></div>
+                <div class="total-label">Total investido</div>
+              </div>
+            </div>
+            <div class="cat-cards" id="cardsUser"></div>
+          </div>
+
+          <!-- Divider vertical -->
+          <div class="vertical-divider"></div>
+
+          <!-- Carteira ARCA -->
+          <div class="chart-col">
+            <h3>Carteira ARCA</h3>
+            <div class="donut-wrap">
+              <svg viewBox="0 0 200 200" id="chartArca"></svg>
+              <div class="donut-center">
+                <div class="total-value" id="arcaTotal"></div>
+                <div class="total-label">Recomendado</div>
+              </div>
+            </div>
+            <div class="cat-cards" id="cardsArca"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIVIDER -->
+    <div class="divider-line"></div>
+
+    <!-- CARDS: Jornada + Passos -->
+    <section class="panel">
+      <div class="panelHeader">
+        <h2>Jornada (Lead -> Kickoff)</h2>
+        <div class="hint">Clique para ver detalhes</div>
+      </div>
+      <div class="panelBody">
+        <div class="detail-section">
+          <div>
+            <div class="cards-grid" role="listbox" aria-label="Etapas">
+              <div class="step" role="option" tabindex="0" data-kind="step" data-id="prospeccao" aria-selected="false">
+                <div class="stepTop">
+                  <div class="stepName">Prospecção</div>
+                  <div class="stepTag">Ritmo</div>
+                </div>
+                <div class="stepDesc">24h para o 1o contato - 14 dias no ciclo - 3 rodadas.</div>
+              </div>
+              <div class="step" role="option" tabindex="0" data-kind="step" data-id="diagnostico" aria-selected="false">
+                <div class="stepTop">
+                  <div class="stepName">Diagnóstico (R1)</div>
+                  <div class="stepTag">Entender</div>
+                </div>
+                <div class="stepDesc">Confiança + coletar realidade e objetivos - 4 quadrantes.</div>
+              </div>
+              <div class="step" role="option" tabindex="0" data-kind="step" data-id="plano" aria-selected="true">
+                <div class="stepTop">
+                  <div class="stepName">Plano (R2)</div>
+                  <div class="stepTag">Educar</div>
+                </div>
+                <div class="stepDesc">Goal-based investing - Projeção do patrimônio - ARCA como núcleo.</div>
+              </div>
+              <div class="step" role="option" tabindex="0" data-kind="step" data-id="kickoff" aria-selected="false">
+                <div class="stepTop">
+                  <div class="stepName">Kickoff</div>
+                  <div class="stepTag">Executar</div>
+                </div>
+                <div class="stepDesc">Plano em ação - Operacional + especialistas.</div>
+              </div>
+            </div>
+
+            <div class="fourSteps" aria-label="4 passos">
+              <div class="mini"><div class="k">Passo 1</div><div class="v">Construção</div><div class="k">investimentos + objetivos</div></div>
+              <div class="mini"><div class="k">Passo 2</div><div class="v">Proteção</div><div class="k">segurança + blindagens</div></div>
+              <div class="mini"><div class="k">Passo 3</div><div class="v">Otimização</div><div class="k">eficiência + caixa</div></div>
+              <div class="mini"><div class="k">Passo 4</div><div class="v">Perpetuação</div><div class="k">legado + continuidade</div></div>
+            </div>
+
+            <div class="callout" aria-label="Governança">
+              <h3>Governança (resumo)</h3>
+              <ul>
+                <li>Registrar tudo no CRM.</li>
+                <li>Cadência consistente: não "sumir" do lead.</li>
+                <li>Evitar sobrecarga: clareza antes de profundidade.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Detail panel -->
+          <div>
+            <h3 id="detailTitle" class="detailTitle">Plano Estratégico (R2)</h3>
+            <p id="detailSubtitle" class="detailSubtitle">Conecte o diagnóstico ao plano: o cliente não compra gráfico, compra a lógica do método.</p>
+            <div class="detailGrid" id="detailGrid"></div>
+            <div class="footerNote">
+              Dica: clique nas etapas para ver os detalhes aqui.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // ===== Portfolio data from Pluggy =====
+    const investments = [
+      { name: "XP Investor Mútuo Privatização FGTS", amount: 38463.87, category: "acoes" },
+      { name: "LFT mar-29 (Tesouro Selic)", amount: 184.71, category: "caixa" },
+      { name: "NTN-B mai-55 (Tesouro IPCA+)", amount: 41.23, category: "caixa" }
+    ];
+
+    const categories = [
+      { id: "acoes",          label: "Ações",               color: "var(--c-acoes)" },
+      { id: "realestate",     label: "Real Estate",         color: "var(--c-realestate)" },
+      { id: "caixa",          label: "Caixa",               color: "var(--c-caixa)" },
+      { id: "internacionais", label: "Ativos Internacionais", color: "var(--c-intl)" }
+    ];
+
+    // Aggregate user portfolio by category
+    const userTotals = {};
+    categories.forEach(c => userTotals[c.id] = 0);
+    investments.forEach(inv => { userTotals[inv.category] += inv.amount; });
+    const userTotal = Object.values(userTotals).reduce((a,b) => a+b, 0);
+
+    // ARCA recommended (25% each)
+    const arcaTotals = {};
+    categories.forEach(c => arcaTotals[c.id] = userTotal * 0.25);
+
+    function fmtBRL(v){
+      return v.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+    }
+    function fmtPct(v, total){
+      if(total === 0) return "0%";
+      return (v / total * 100).toFixed(1) + "%";
+    }
+
+    // ===== Donut chart =====
+    function drawDonut(svgId, totals, total){
+      const svg = document.getElementById(svgId);
+      const cx = 100, cy = 100, r = 75, stroke = 22;
+      const circumference = 2 * Math.PI * r;
+      let offset = 0;
+
+      // background circle
+      const bg = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      bg.setAttribute("cx", cx); bg.setAttribute("cy", cy); bg.setAttribute("r", r);
+      bg.setAttribute("fill", "none"); bg.setAttribute("stroke", "rgba(255,255,255,.06)");
+      bg.setAttribute("stroke-width", stroke);
+      svg.appendChild(bg);
+
+      categories.forEach(cat => {
+        const val = totals[cat.id];
+        const pct = total > 0 ? val / total : 0;
+        if(pct === 0) return;
+
+        const seg = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        seg.setAttribute("cx", cx); seg.setAttribute("cy", cy); seg.setAttribute("r", r);
+        seg.setAttribute("fill", "none");
+        seg.setAttribute("stroke", cat.color);
+        seg.setAttribute("stroke-width", stroke);
+        seg.setAttribute("stroke-dasharray", `${pct * circumference} ${circumference}`);
+        seg.setAttribute("stroke-dashoffset", `${-offset * circumference}`);
+        seg.setAttribute("transform", `rotate(-90 ${cx} ${cy})`);
+        seg.style.transition = "stroke-dasharray .4s ease";
+        svg.appendChild(seg);
+
+        offset += pct;
+      });
+    }
+
+    // ===== Category cards =====
+    function renderCards(containerId, totals, total){
+      const container = document.getElementById(containerId);
+      categories.forEach(cat => {
+        const val = totals[cat.id];
+        const card = document.createElement('div');
+        card.className = 'cat-card';
+        card.innerHTML = `
+          <div class="cat-dot" style="background:${cat.color}"></div>
+          <div class="cat-info">
+            <div class="cat-name">${cat.label}</div>
+            <div class="cat-value">${fmtBRL(val)}</div>
+            <div class="cat-pct">${fmtPct(val, total)}</div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Draw charts
+    drawDonut('chartUser', userTotals, userTotal);
+    drawDonut('chartArca', arcaTotals, userTotal);
+
+    document.getElementById('userTotal').textContent = fmtBRL(userTotal);
+    document.getElementById('arcaTotal').textContent = fmtBRL(userTotal);
+
+    renderCards('cardsUser', userTotals, userTotal);
+    renderCards('cardsArca', arcaTotals, userTotal);
+
+    // ===== Step detail interaction =====
+    const DATA = {
+      steps: {
+        prospeccao: {
+          title: "Prospecção",
+          subtitle: "Ritmo estratégico (cadência) + registro no CRM.",
+          blocks: [
+            { title: "Cadência", bullets: ["1o contato rápido (até 24h).", "Ciclo mínimo de 14 dias, 3 rodadas.", "Rodada = 3 ligações + WhatsApp."], chips: ["Disciplina", "Velocidade"] },
+            { title: "Resultado esperado", bullets: ["Transformar nome em oportunidade.", "Evitar ghosting com rotina clara.", "Chegar na R1 com agendamento."], chips: ["Agendamento R1"] }
+          ]
+        },
+        diagnostico: {
+          title: "Diagnóstico (R1)",
+          subtitle: "Entender para atender: confiança + objetivos + realidade financeira.",
+          blocks: [
+            { title: "Sequência sugerida", bullets: ["Rapport.", "Quem somos (autoridade).", "Coleta de dados + Suitability.", "Micro compromisso + agendar R2."], chips: ["Roteiro", "Clareza"] },
+            { title: "4 quadrantes (360°)", bullets: ["Construir: vida + investimentos.", "Otimizar: banking, crédito.", "Estruturar: tributário + proteção.", "Perpetuar: patrimônio + sucessão."], chips: ["Quadrantes"] }
+          ]
+        },
+        plano: {
+          title: "Plano Estratégico (R2)",
+          subtitle: "Goal-based investing: conectar objetivos, números e método.",
+          blocks: [
+            { title: "Mindset do cliente", bullets: ["Ele espera rentabilidade; você educa para o todo.", "Venda a lógica do método, não um produto."], chips: ["Educação"] },
+            { title: "Como apresentar", bullets: ["Projeção do patrimônio em 4 passos.", "Preencha quadrantes com números reais.", "ARCA vira o núcleo de alocação."], chips: ["4 passos", "Plano acionável"] },
+            { title: "ARCA (exemplos)", bullets: ["Diversificação geográfica/classe protege o plano.", "1 história + 1 evidência (backtest)."], chips: ["Story", "Backtest"] }
+          ]
+        },
+        kickoff: {
+          title: "Kickoff",
+          subtitle: "Início oficial: plano em execução + conforto operacional.",
+          blocks: [
+            { title: "Função", bullets: ["Reforçar propósito e colocar em prática.", "Segurança operacional.", "Agendar especialistas (Wealth, Crédito, etc)."], chips: ["Execução"] },
+            { title: "Regra de ouro", bullets: ["Sem Kickoff sem contrato assinado.", "Guiar passo a passo se travar na transferência."], chips: ["Contrato", "Transferências"] }
+          ]
+        }
+      }
+    };
+
+    const detailTitle = document.getElementById('detailTitle');
+    const detailSubtitle = document.getElementById('detailSubtitle');
+    const detailGrid = document.getElementById('detailGrid');
+
+    function renderBlocks(blocks){
+      detailGrid.innerHTML = '';
+      for(const b of blocks){
+        const el = document.createElement('div');
+        el.className = 'callout';
+        el.style.marginTop = '0';
+        const h = document.createElement('h3');
+        h.textContent = b.title;
+        const ul = document.createElement('ul');
+        (b.bullets||[]).forEach(t => { const li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+        el.appendChild(h); el.appendChild(ul);
+        if(b.chips && b.chips.length){
+          const chips = document.createElement('div');
+          chips.className = 'chips';
+          b.chips.forEach(c => { const chip = document.createElement('span'); chip.className = 'chip'; chip.textContent = c; chips.appendChild(chip); });
+          el.appendChild(chips);
+        }
+        detailGrid.appendChild(el);
+      }
+    }
+
+    function selectStep(id, sourceEl){
+      const d = DATA.steps[id];
+      if(!d) return;
+      detailTitle.textContent = d.title;
+      detailSubtitle.textContent = d.subtitle;
+      renderBlocks(d.blocks);
+      document.querySelectorAll('.step').forEach(el => {
+        el.setAttribute('aria-selected', el === sourceEl ? 'true' : 'false');
+      });
+    }
+
+    document.querySelectorAll('.step[data-kind="step"]').forEach(el => {
+      el.addEventListener('click', () => selectStep(el.dataset.id, el));
+      el.addEventListener('keydown', e => {
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); selectStep(el.dataset.id, el); }
+      });
+    });
+
+    // Default
+    const defaultStep = document.querySelector('.step[data-id="plano"]');
+    selectStep('plano', defaultStep);
+  </script>
+</body>
+</html>

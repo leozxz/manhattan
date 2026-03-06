@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+.hover-arc[data-dir="tl"]:not([data-active="true"]):hover {
+  transform: translate(-2px, -2px) !important;
+}
+.hover-arc[data-dir="tr"]:not([data-active="true"]):hover {
+  transform: translate(2px, -2px) !important;
+}
+.hover-arc[data-dir="br"]:not([data-active="true"]):hover {
+  transform: translate(2px, 2px) !important;
+}
+.hover-arc[data-dir="bl"]:not([data-active="true"]):hover {
+  transform: translate(-2px, 2px) !important;
+}
